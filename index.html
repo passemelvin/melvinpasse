@@ -1619,12 +1619,14 @@
     <div class="reco-form-wrap fade-in">
       <p class="section-label" style="text-align:left; margin-bottom:.4rem;">Laisser une recommandation</p>
       <p style="font-size:.88rem; color:var(--muted); margin-bottom:.5rem;">Vous avez travaillé avec moi ? Votre retour est précieux.</p>
-      <form class="reco-form" onsubmit="handleReco(event)">
+      <form class="reco-form" onsubmit="handleReco(event)" action="https://formspree.io/f/maqaawoa" method="POST">
+        <input type="hidden" name="_subject" value="Nouvelle recommandation — CV Melvin">
+        <input type="hidden" name="type" value="recommandation">
         <div class="reco-form-row">
-          <input class="form-field" type="text" placeholder="Votre nom" required>
-          <input class="form-field" type="text" placeholder="Votre rôle / entreprise" required>
+          <input class="form-field" type="text" name="nom" placeholder="Votre nom" required>
+          <input class="form-field" type="text" name="role" placeholder="Votre rôle / entreprise" required>
         </div>
-        <textarea class="form-field" placeholder="Votre témoignage…" style="min-height:100px;" required></textarea>
+        <textarea class="form-field" name="temoignage" placeholder="Votre témoignage…" style="min-height:100px;" required></textarea>
         <button type="submit" class="btn-send">Envoyer ma recommandation →</button>
       </form>
     </div>
@@ -1960,13 +1962,33 @@
     function handleReco(e) {
       e.preventDefault();
       const btn = e.target.querySelector('button');
-      btn.textContent = '✓ Témoignage reçu, merci !';
-      btn.style.background = 'var(--green)';
-      setTimeout(() => {
-        btn.textContent = 'Envoyer le témoignage →';
-        btn.style.background = '';
-        e.target.reset();
-      }, 3500);
+      const data = new FormData(e.target);
+      btn.textContent = 'Envoi en cours…';
+      btn.disabled = true;
+      fetch('https://formspree.io/f/maqaawoa', {
+        method: 'POST',
+        body: data,
+        headers: { 'Accept': 'application/json' }
+      }).then(r => {
+        if (r.ok) {
+          btn.textContent = '✓ Témoignage reçu, merci !';
+          btn.style.background = 'var(--green)';
+          e.target.reset();
+          setTimeout(() => {
+            btn.textContent = 'Envoyer ma recommandation →';
+            btn.style.background = '';
+            btn.disabled = false;
+          }, 3500);
+        } else {
+          btn.textContent = 'Erreur — réessayez';
+          btn.style.background = '#c0392b';
+          btn.disabled = false;
+        }
+      }).catch(() => {
+        btn.textContent = 'Erreur — réessayez';
+        btn.style.background = '#c0392b';
+        btn.disabled = false;
+      });
     }
 
 
